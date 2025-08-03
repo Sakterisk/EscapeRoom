@@ -37,3 +37,15 @@ bool AInteractableObject::IsNewComponent(UPrimitiveComponent* TouchedComponent)
 {
 	return false;
 }
+
+void AInteractableObject::SetInteractable(bool bNewInteractable)
+{
+	if (bNewInteractable)
+	{
+		MeshComponent->SetCollisionResponseToChannel(ECollisionChannel::ECC_GameTraceChannel2, ECollisionResponse::ECR_Block);
+	}
+	else
+	{
+		MeshComponent->SetCollisionResponseToChannel(ECollisionChannel::ECC_GameTraceChannel2, ECollisionResponse::ECR_Ignore);
+	}
+}

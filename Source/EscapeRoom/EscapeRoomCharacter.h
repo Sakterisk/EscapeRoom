@@ -46,10 +46,6 @@ class AEscapeRoomCharacter : public ACharacter
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Input, meta=(AllowPrivateAccess = "true"))
 	UInputAction* InspectAction;
 
-	/** Crouch Input Action */
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Input, meta=(AllowPrivateAccess = "true"))
-	UInputAction* CrouchAction;
-
 	/** Restart Input Action */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Input, meta=(AllowPrivateAccess = "true"))
 	UInputAction* ResetAction;
@@ -86,10 +82,6 @@ protected:
 
 	/** Called when the player wants to inspect an object */
 	void Inspect(const FInputActionValue& Value);
-
-	/** Called when the player wants to crouch */
-	void StartCrouch(const FInputActionValue& Value);
-	void StopCrouch(const FInputActionValue& Value);
 
 	void ResetLevel(const FInputActionValue& Value);
 
@@ -131,13 +123,7 @@ private:
 	UUserWidget* PauseWidget;
 
 	UPROPERTY()
-	bool bIsCrouching = false;
-
-	UPROPERTY()
-	float StandingHeight = 0.0f;
-
-	UPROPERTY()
-	bool bCanCrouch = true;
+	bool bIsInspecting = false;
 
 };
 

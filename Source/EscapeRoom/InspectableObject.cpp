@@ -74,12 +74,10 @@ void AInspectableObject::OnDragInInspect(FVector2D MousePosition)
 {
 	if (CameraComponent) return;
 	if (!bIsRotating) return;
+
 	FVector2D Delta = MousePosition - InitialMousePosition;
-
 	FQuat CurrentRotation = GetActorQuat();
-
 	FQuat YawRotation = FQuat(CameraUpVector, FMath::DegreesToRadians(Delta.X * -RotationSpeed));
-
 	FQuat PitchRotation = FQuat(CameraRightVector, FMath::DegreesToRadians(Delta.Y * -RotationSpeed));
 
 	AddActorWorldRotation(PitchRotation);

@@ -62,6 +62,7 @@ private:
 
 protected:
 
+	UPROPERTY(EditAnywhere, Category = "Settings")
 	UCameraComponent* CameraComponent = nullptr;
 
 	UPROPERTY(EditAnywhere, Category = "Settings")

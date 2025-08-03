@@ -27,10 +27,12 @@ public:
 	virtual bool IsNewComponent(UPrimitiveComponent* TouchedComponent);
 	UFUNCTION(BlueprintCallable, Category = "Interactable")
 	virtual UPrimitiveComponent* GetMesh() const { return MeshComponent; }
+	UFUNCTION(BlueprintCallable, Category = "Interactable")
+	void SetInteractable(bool bNewInteractable);
 
 protected:
 	
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Mesh")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Mesh")
 	UStaticMeshComponent* MeshComponent;
 
 };

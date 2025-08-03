@@ -48,7 +48,7 @@ AEscapeRoomCharacter::AEscapeRoomCharacter()
 	InteractComponent->SetupAttachment(FirstPersonCameraComponent);
 	InteractComponent->SetPhysicsHandle(PhysicsHandle);
 	
-	GetCharacterMovement()->NavAgentProps.bCanCrouch = true;
+	GetCharacterMovement()->NavAgentProps.bCanCrouch = false;
 	GetCharacterMovement()->bUseFlatBaseForFloorChecks = true;
 
 }
@@ -57,8 +57,6 @@ void AEscapeRoomCharacter::BeginPlay()
 {
 	// Call the base class  
 	Super::BeginPlay();
-
-	StandingHeight = GetCapsuleComponent()->GetUnscaledCapsuleHalfHeight();
 }
 
 //////////////////////////////////////////////////////////////////////////// Input
@@ -80,10 +78,6 @@ void AEscapeRoomCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInpu
 
 		// Inspecting
 		EnhancedInputComponent->BindAction(InspectAction, ETriggerEvent::Completed, this, &AEscapeRoomCharacter::Inspect);
-
-		// Crouching
-		EnhancedInputComponent->BindAction(CrouchAction, ETriggerEvent::Started, this, &AEscapeRoomCharacter::StartCrouch);
-		EnhancedInputComponent->BindAction(CrouchAction, ETriggerEvent::Completed, this, &AEscapeRoomCharacter::StopCrouch);
 
 		// Restarting
 		EnhancedInputComponent->BindAction(ResetAction, ETriggerEvent::Completed, this, &AEscapeRoomCharacter::ResetLevel);
@@ -138,23 +132,21 @@ void AEscapeRoomCharacter::Inspect(const FInputActionValue& Value)
 	InteractComponent->Inspect();
 }
 
-void AEscapeRoomCharacter::SwitchInspecting(bool bIsInspecting)
+void AEscapeRoomCharacter::SwitchInspecting(bool inspecting)
 {	
-	bCanCrouch = !bIsInspecting;
+	bIsInspecting = inspecting;
 	APlayerController* PlayerController = Cast<APlayerController>(GetController());
-	PlayerController->bShowMouseCursor = bIsInspecting;
-	PlayerController->bEnableClickEvents = bIsInspecting;
-	PlayerController->bEnableMouseOverEvents = bIsInspecting;
+	PlayerController->bShowMouseCursor = inspecting;
+	PlayerController->bEnableClickEvents = inspecting;
+	PlayerController->bEnableMouseOverEvents = inspecting;
 
-	if (bIsInspecting)
+	if (inspecting)
 	{
 		CrosshairWidget->SetVisibility(ESlateVisibility::Hidden);
 		FInputModeGameAndUI InputMode;
 		InputMode.SetLockMouseToViewportBehavior(EMouseLockMode::DoNotLock);
 		InputMode.SetHideCursorDuringCapture(false);
 		PlayerController->SetInputMode(InputMode);
-		//stop crouching input
-
 	}
 	else
 	{
@@ -162,8 +154,8 @@ void AEscapeRoomCharacter::SwitchInspecting(bool bIsInspecting)
 		FInputModeGameOnly InputMode;
 		PlayerController->SetInputMode(InputMode);
 	}
-	PlayerController->SetIgnoreLookInput(bIsInspecting);
-	PlayerController->SetIgnoreMoveInput(bIsInspecting);
+	PlayerController->SetIgnoreLookInput(inspecting);
+	PlayerController->SetIgnoreMoveInput(inspecting);
 }
 
 void AEscapeRoomCharacter::ChangeCrosshair(FString NewCrosshair)
@@ -179,42 +171,19 @@ void AEscapeRoomCharacter::InteruptInspecting()
 	InteractComponent->Inspect();
 }
 
-void AEscapeRoomCharacter::StartCrouch(const FInputActionValue& Value)
-{
-	if (!bCanCrouch) return;
-	bIsCrouching = true;
-}
-
-void AEscapeRoomCharacter::StopCrouch(const FInputActionValue& Value)
-{
-	if (!bCanCrouch) return;
-	bIsCrouching = false;
-}
-
 void AEscapeRoomCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-
-    float CurrentHeight = GetCapsuleComponent()->GetUnscaledCapsuleHalfHeight();
-	if (CurrentHeight < StandingHeight || bIsCrouching)
-	{
-		float TargetHeight = bIsCrouching ? GetCharacterMovement()->GetCrouchedHalfHeight() : StandingHeight;
-		
-		float NewHeight = FMath::FInterpTo(CurrentHeight, TargetHeight, DeltaTime, 5.0f);
-		GetCapsuleComponent()->SetCapsuleHalfHeight(NewHeight, true);
-		GetCharacterMovement()->MaxWalkSpeed = bIsCrouching ? 175.0f : 300.0f;
-	}
 }
 
 void AEscapeRoomCharacter::ResetLevel(const FInputActionValue& Value)
 {
-	if (!bCanCrouch) return;
 	UGameplayStatics::OpenLevel(this, FName(*GetWorld()->GetName()), false);
 }
 
 void AEscapeRoomCharacter::Pause(const FInputActionValue& Value)
 {
-	if (!bCanCrouch) 
+	if (bIsInspecting) 
 	{
 		InteractComponent->Inspect();
 		return;
@@ -228,7 +197,6 @@ void AEscapeRoomCharacter::Pause(const FInputActionValue& Value)
 		}
 		else
 		{
-			PlayerController->SetPause(true);
 			PlayerController->bShowMouseCursor = true;
 			PlayerController->bEnableClickEvents = true;
 			PlayerController->bEnableMouseOverEvents = true;
@@ -252,7 +220,6 @@ void AEscapeRoomCharacter::Pause(const FInputActionValue& Value)
 
 void AEscapeRoomCharacter::UnpauseGame(APlayerController* PlayerController)
 {
-	PlayerController->SetPause(false);
 	PlayerController->bShowMouseCursor = false;
 	PlayerController->bEnableClickEvents = false;
 	PlayerController->bEnableMouseOverEvents = false;
@@ -264,7 +231,6 @@ void AEscapeRoomCharacter::UnpauseGame(APlayerController* PlayerController)
 	{
 		CrosshairWidget->SetVisibility(ESlateVisibility::Visible);
 	}
-	PlayerController->Possess(this);
 	FInputModeGameOnly InputMode;
 	PlayerController->SetInputMode(InputMode);
 	PlayerController->SetIgnoreLookInput(false);
