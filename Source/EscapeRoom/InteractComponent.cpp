@@ -189,7 +189,7 @@ void UInteractComponent::Inspect()
 	else
 	{
 		InspectedActor->GetCameraComponent()->SetActive(true);
-		PlayerController->SetViewTargetWithBlend(InspectedActor, 0.5f, EViewTargetBlendFunction::VTBlend_Cubic, 0.5f, true);
+		PlayerController->SetViewTargetWithBlend(InspectedActor, 0.5f, EViewTargetBlendFunction::VTBlend_Cubic, 0.5f, false);
 	}
 
 	Cast<AEscapeRoomCharacter>(GetOwner())->SwitchInspecting(true);
